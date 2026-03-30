@@ -1,5 +1,6 @@
 package app.web.bekh20d.habit_tracker.service
 
+import app.web.bekh20d.habit_tracker.repository.EmailVerificationTokenRepository
 import app.web.bekh20d.habit_tracker.repository.UserRepository
 import app.web.bekh20d.habit_tracker.util.JwtUtil
 import io.kotest.core.spec.style.StringSpec
@@ -30,11 +31,14 @@ class AuthServicePasswordPropertyTest : StringSpec({
 
     "Property 1: passwords are never stored in plaintext" {
         val userRepository = mock(UserRepository::class.java)
+        val tokenRepository = mock(EmailVerificationTokenRepository::class.java)
         val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
         val jwtUtil = mock(JwtUtil::class.java)
-        val authService = AuthService(userRepository, passwordEncoder, jwtUtil)
+        val emailService = mock(EmailService::class.java)
+        val authService = AuthService(userRepository, tokenRepository, passwordEncoder, jwtUtil, emailService)
 
         `when`(userRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
+        `when`(tokenRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
 
         checkAll(Arb.string(8..100)) { rawPassword ->
             val user = authService.signup("test@example.com", rawPassword)
@@ -46,11 +50,14 @@ class AuthServicePasswordPropertyTest : StringSpec({
 
     "Property 1: BCrypt hashes are always 60 characters" {
         val userRepository = mock(UserRepository::class.java)
+        val tokenRepository = mock(EmailVerificationTokenRepository::class.java)
         val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
         val jwtUtil = mock(JwtUtil::class.java)
-        val authService = AuthService(userRepository, passwordEncoder, jwtUtil)
+        val emailService = mock(EmailService::class.java)
+        val authService = AuthService(userRepository, tokenRepository, passwordEncoder, jwtUtil, emailService)
 
         `when`(userRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
+        `when`(tokenRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
 
         checkAll(Arb.string(8..100)) { rawPassword ->
             val user = authService.signup("test@example.com", rawPassword)
@@ -62,11 +69,14 @@ class AuthServicePasswordPropertyTest : StringSpec({
 
     "Property 1: BCrypt hashes start with correct prefix" {
         val userRepository = mock(UserRepository::class.java)
+        val tokenRepository = mock(EmailVerificationTokenRepository::class.java)
         val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
         val jwtUtil = mock(JwtUtil::class.java)
-        val authService = AuthService(userRepository, passwordEncoder, jwtUtil)
+        val emailService = mock(EmailService::class.java)
+        val authService = AuthService(userRepository, tokenRepository, passwordEncoder, jwtUtil, emailService)
 
         `when`(userRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
+        `when`(tokenRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
 
         checkAll(Arb.string(8..100)) { rawPassword ->
             val user = authService.signup("test@example.com", rawPassword)
@@ -79,11 +89,14 @@ class AuthServicePasswordPropertyTest : StringSpec({
 
     "Property 8: same password produces different hashes due to unique salts" {
         val userRepository = mock(UserRepository::class.java)
+        val tokenRepository = mock(EmailVerificationTokenRepository::class.java)
         val passwordEncoder: PasswordEncoder = BCryptPasswordEncoder()
         val jwtUtil = mock(JwtUtil::class.java)
-        val authService = AuthService(userRepository, passwordEncoder, jwtUtil)
+        val emailService = mock(EmailService::class.java)
+        val authService = AuthService(userRepository, tokenRepository, passwordEncoder, jwtUtil, emailService)
 
         `when`(userRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
+        `when`(tokenRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
 
         checkAll(Arb.string(8..100)) { rawPassword ->
             val user1 = authService.signup("test1@example.com", rawPassword)
