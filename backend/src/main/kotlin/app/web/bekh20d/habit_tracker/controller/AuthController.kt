@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -40,5 +41,11 @@ class AuthController(
     fun login(@Valid @RequestBody request: LoginRequest): ResponseEntity<LoginResponse> {
         val token = authService.login(request.email, request.password)
         return ResponseEntity.ok(LoginResponse(token))
+    }
+    
+    @PostMapping("/verify-email")
+    fun verifyEmail(@RequestParam token: String): ResponseEntity<MessageResponse> {
+        authService.verifyEmail(token)
+        return ResponseEntity.ok(MessageResponse("Email verified successfully. You can now login."))
     }
 }

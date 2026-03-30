@@ -39,3 +39,9 @@ class GlobalExceptionHandler {
             .body(MessageResponse(ex.message ?: "Email not verified"))
     }
 }
+
+    @ExceptionHandler(InvalidTokenException::class)
+    fun handleInvalidToken(ex: InvalidTokenException): ResponseEntity<MessageResponse> {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(MessageResponse(ex.message ?: "Invalid or expired token"))
+    }
