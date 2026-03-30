@@ -12,6 +12,22 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 jwt:
   secret: ${JWT_SECRET:mySecretKeyForDevelopmentOnlyPleaseChangeInProduction1234567890}
   expiration: 86400000  # 24 hours in milliseconds
+
+app:
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
