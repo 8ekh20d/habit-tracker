@@ -1,0 +1,6 @@
+# IDE
+.vscode/
+.idea/
+
+# Test results and temporary files
+*_TEST_RESULTS.md
