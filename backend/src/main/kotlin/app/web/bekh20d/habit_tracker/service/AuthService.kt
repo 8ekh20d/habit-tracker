@@ -1,18 +1,25 @@
 package app.web.bekh20d.habit_tracker.service
 
 import app.web.bekh20d.habit_tracker.exception.InvalidCredentialsException
+import app.web.bekh20d.habit_tracker.exception.InvalidTokenException
 import app.web.bekh20d.habit_tracker.exception.UnverifiedUserException
+import app.web.bekh20d.habit_tracker.model.EmailVerificationToken
 import app.web.bekh20d.habit_tracker.model.User
+import app.web.bekh20d.habit_tracker.repository.EmailVerificationTokenRepository
 import app.web.bekh20d.habit_tracker.repository.UserRepository
 import app.web.bekh20d.habit_tracker.util.JwtUtil
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
+import java.util.UUID
 
 @Service
 class AuthService(
     private val userRepository: UserRepository,
+    private val emailVerificationTokenRepository: EmailVerificationTokenRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val jwtUtil: JwtUtil
+    private val jwtUtil: JwtUtil,
+    private val emailService: EmailService
 ) {
 
     fun signup(email: String, password: String): User {
@@ -26,8 +33,23 @@ class AuthService(
             verified = false
         )
 
-        // Save and return user
-        return userRepository.save(user)
+        // Save user
+        val savedUser = userRepository.save(user)
+        
+        // Generate verification token with 24-hour expiry
+        val token = UUID.randomUUID().toString()
+        val expiryDate = LocalDateTime.now().plusHours(24)
+        val verificationToken = EmailVerificationToken(
+            userId = savedUser.id,
+            token = token,
+            expiryDate = expiryDate
+        )
+        emailVerificationTokenRepository.save(verificationToken)
+        
+        // Send verification email
+        emailService.sendVerificationEmail(email, token)
+        
+        return savedUser
     }
     
     fun login(email: String, password: String): String {
@@ -47,5 +69,35 @@ class AuthService(
         
         // Generate and return JWT token
         return jwtUtil.generateToken(user.id, user.email)
+    }
+    
+    fun verifyEmail(token: String) {
+        // Find token in database
+        val verificationToken = emailVerificationTokenRepository.findByToken(token)
+            ?: throw InvalidTokenException("Invalid or expired token")
+        
+        // Check if token is expired
+        if (LocalDateTime.now().isAfter(verificationToken.expiryDate)) {
+            emailVerificationTokenRepository.delete(verificationToken)
+            throw InvalidTokenException("Token has expired")
+        }
+        
+        // Update user verified status
+        val user = userRepository.findById(verificationToken.userId).orElseThrow {
+            throw InvalidTokenException("User not found")
+        }
+        
+        // Create updated user with verified=true
+        val updatedUser = User(
+            id = user.id,
+            email = user.email,
+            password = user.password,
+            verified = true,
+            createdAt = user.createdAt
+        )
+        userRepository.save(updatedUser)
+        
+        // Delete verification token after successful verification
+        emailVerificationTokenRepository.delete(verificationToken)
     }
 }
