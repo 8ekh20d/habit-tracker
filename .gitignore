@@ -4,3 +4,8 @@
 
 # Test results and temporary files
 *_TEST_RESULTS.md
+
+# Environment variables
+.env
+backend/.env
+frontend/.env.local
