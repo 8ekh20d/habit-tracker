@@ -38,10 +38,16 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
             .body(MessageResponse(ex.message ?: "Email not verified"))
     }
-}
 
     @ExceptionHandler(InvalidTokenException::class)
     fun handleInvalidToken(ex: InvalidTokenException): ResponseEntity<MessageResponse> {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(MessageResponse(ex.message ?: "Invalid or expired token"))
     }
+
+    @ExceptionHandler(NotFoundException::class)
+    fun handleNotFound(ex: NotFoundException): ResponseEntity<MessageResponse> {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(MessageResponse(ex.message ?: "Resource not found"))
+    }
+}

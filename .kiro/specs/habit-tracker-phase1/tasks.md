@@ -146,8 +146,8 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
 - [x] 5. Checkpoint - Ensure authentication works end-to-end
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. Habit CRUD Operations - Entity and Repository
-  - [ ] 6.1 Create habit entity and repository
+- [x] 6. Habit CRUD Operations - Entity and Repository
+  - [x] 6.1 Create habit entity and repository
     - Create `FrequencyType` enum with DAILY value
     - Create `Habit` entity with id, userId, name, frequencyType, createdAt fields
     - Add validation: name not blank, max 100 characters
@@ -158,8 +158,8 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 4.1, 4.3, 4.4, 4.6, 20.1, 20.3_
     - _Commit: feat(habits): add habit entity and repository_
 
-- [ ] 7. Habit CRUD Operations - Service and Endpoints
-  - [ ] 7.1 Implement habit service with CRUD operations
+- [x] 7. Habit CRUD Operations - Service and Endpoints
+  - [x] 7.1 Implement habit service with CRUD operations
     - Create `HabitService` class
     - Implement `createHabit(userId: Long, name: String, frequencyType: FrequencyType): Habit`
     - Validate frequencyType is DAILY (throw exception for others)
@@ -170,7 +170,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 4.1, 4.5, 5.1, 5.2, 6.1, 6.2, 6.3, 6.4, 7.1, 7.3, 15.1, 15.2, 15.3, 15.5, 20.2_
     - _Commit: feat(habits): implement habit CRUD endpoints_
 
-  - [ ] 7.2 Create habit controller with REST endpoints
+  - [x] 7.2 Create habit controller with REST endpoints
     - Create `CreateHabitRequest` DTO with name validation
     - Create `UpdateHabitRequest` DTO with optional name
     - Create `HabitResponse` DTO with id, name, frequencyType, createdAt
@@ -184,19 +184,19 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 4.2, 4.3, 4.4, 5.3, 5.4, 6.3, 6.4, 6.5, 7.4, 14.1, 14.3, 14.4, 17.1, 17.3_
     - _Commit: feat(habits): implement habit CRUD endpoints_
 
-  - [ ] 7.3 Write property test for habit ownership
+  - [x] 7.3 Write property test for habit ownership
     - **Property 4: Habit Ownership**
     - **Validates: Requirements 5.2, 6.2, 7.3, 8.3, 15.1, 15.2, 15.3, 15.5**
     - Test that users can only access their own habits
     - Test that users cannot modify other users' habits
     - Test that users cannot delete other users' habits
 
-  - [ ] 7.4 Write property test for habit creation ownership
+  - [x] 7.4 Write property test for habit creation ownership
     - **Property 9: Habit Creation Ownership**
     - **Validates: Requirements 4.5**
     - Test that created habits are always associated with creator's userId
 
-  - [ ] 7.5 Write unit tests for habit CRUD
+  - [x] 7.5 Write unit tests for habit CRUD
     - Test create habit with valid name
     - Test create habit with blank name returns 400
     - Test create habit with name > 100 chars returns 400
