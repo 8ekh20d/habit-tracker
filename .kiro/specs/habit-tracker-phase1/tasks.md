@@ -205,7 +205,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - Test update habit not owned returns 404
     - Test delete habit removes habit and records
 
-- [ ] 8. Daily Habit Tracking
+- [x] 8. Daily Habit Tracking
   - [ ] 8.1 Create habit record entity and repository
     - Create `RecordStatus` enum with DONE value
     - Create `HabitRecord` entity with id, habitId, date, status fields

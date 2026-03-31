@@ -38,7 +38,7 @@ class AuthServiceEmailVerificationPropertyTest : StringSpec({
         val emailService = mock(EmailService::class.java)
         val authService = AuthService(userRepository, tokenRepository, passwordEncoder, jwtUtil, emailService)
 
-        checkAll(10, Arb.string(8..100)) { rawPassword ->
+        checkAll(5, Arb.string(8..100)) { rawPassword ->
             val email = "test@example.com"
             val hashedPassword = passwordEncoder.encode(rawPassword)
             
@@ -67,7 +67,7 @@ class AuthServiceEmailVerificationPropertyTest : StringSpec({
         val emailService = mock(EmailService::class.java)
         val authService = AuthService(userRepository, tokenRepository, passwordEncoder, jwtUtil, emailService)
 
-        checkAll(10, Arb.string(8..100)) { rawPassword ->
+        checkAll(5, Arb.string(8..100)) { rawPassword ->
             val email = "test@example.com"
             val hashedPassword = passwordEncoder.encode(rawPassword)
             

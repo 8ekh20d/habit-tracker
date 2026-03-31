@@ -3,6 +3,7 @@ package app.web.bekh20d.habit_tracker.service
 import app.web.bekh20d.habit_tracker.exception.NotFoundException
 import app.web.bekh20d.habit_tracker.model.FrequencyType
 import app.web.bekh20d.habit_tracker.model.Habit
+import app.web.bekh20d.habit_tracker.repository.HabitRecordRepository
 import app.web.bekh20d.habit_tracker.repository.HabitRepository
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -18,6 +19,9 @@ class HabitServiceTest {
 
     @Mock
     private lateinit var habitRepository: HabitRepository
+
+    @Mock
+    private lateinit var habitRecordRepository: HabitRecordRepository
 
     @InjectMocks
     private lateinit var habitService: HabitService

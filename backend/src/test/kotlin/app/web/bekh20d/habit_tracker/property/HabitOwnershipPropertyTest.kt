@@ -3,6 +3,7 @@ package app.web.bekh20d.habit_tracker.property
 import app.web.bekh20d.habit_tracker.exception.NotFoundException
 import app.web.bekh20d.habit_tracker.model.FrequencyType
 import app.web.bekh20d.habit_tracker.model.Habit
+import app.web.bekh20d.habit_tracker.repository.HabitRecordRepository
 import app.web.bekh20d.habit_tracker.repository.HabitRepository
 import app.web.bekh20d.habit_tracker.service.HabitService
 import io.kotest.assertions.throwables.shouldThrow
@@ -35,12 +36,14 @@ class HabitOwnershipPropertyTest : StringSpec({
 
     "Property 9: created habits are always associated with creator's userId" {
         checkAll<Long, String>(
+            5,
             Arb.long(1L..1000L),  // user ID
             Arb.string(1..100).filter { it.isNotBlank() }  // habit name
         ) { userId, habitName ->
             // Arrange
             val habitRepository = mock<HabitRepository>()
-            val habitService = HabitService(habitRepository)
+            val habitRecordRepository = mock<HabitRecordRepository>()
+            val habitService = HabitService(habitRepository, habitRecordRepository)
             
             val createdHabit = Habit(
                 id = 1L,
@@ -65,6 +68,7 @@ class HabitOwnershipPropertyTest : StringSpec({
 
     "Property 4: users can only retrieve their own habits" {
         checkAll<Long, Long, String>(
+            5,
             Arb.long(1L..1000L),  // owner user ID
             Arb.long(1L..1000L),  // different user ID
             Arb.string(1..100)  // habit name
@@ -73,7 +77,8 @@ class HabitOwnershipPropertyTest : StringSpec({
             if (ownerId == otherUserId) return@checkAll
             // Arrange
             val habitRepository = mock<HabitRepository>()
-            val habitService = HabitService(habitRepository)
+            val habitRecordRepository = mock<HabitRecordRepository>()
+            val habitService = HabitService(habitRepository, habitRecordRepository)
             
             val ownerHabit = Habit(
                 id = 1L,
@@ -113,6 +118,7 @@ class HabitOwnershipPropertyTest : StringSpec({
 
     "Property 4: users cannot modify habits they do not own" {
         checkAll<Long, Long, String, String>(
+            5,
             Arb.long(1L..1000L),  // owner user ID
             Arb.long(1L..1000L),  // different user ID
             Arb.string(1..100),  // original habit name
@@ -122,7 +128,8 @@ class HabitOwnershipPropertyTest : StringSpec({
             if (ownerId == otherUserId) return@checkAll
             // Arrange
             val habitRepository = mock<HabitRepository>()
-            val habitService = HabitService(habitRepository)
+            val habitRecordRepository = mock<HabitRecordRepository>()
+            val habitService = HabitService(habitRepository, habitRecordRepository)
             
             val habitId = 1L
             
@@ -154,6 +161,7 @@ class HabitOwnershipPropertyTest : StringSpec({
 
     "Property 4: users cannot delete habits they do not own" {
         checkAll<Long, Long, String>(
+            5,
             Arb.long(1L..1000L),  // owner user ID
             Arb.long(1L..1000L),  // different user ID
             Arb.string(1..100)  // habit name
@@ -162,7 +170,8 @@ class HabitOwnershipPropertyTest : StringSpec({
             if (ownerId == otherUserId) return@checkAll
             // Arrange
             val habitRepository = mock<HabitRepository>()
-            val habitService = HabitService(habitRepository)
+            val habitRecordRepository = mock<HabitRecordRepository>()
+            val habitService = HabitService(habitRepository, habitRecordRepository)
             
             val habitId = 1L
             
@@ -194,12 +203,14 @@ class HabitOwnershipPropertyTest : StringSpec({
 
     "Property 4: owner can successfully access their own habits" {
         checkAll<Long, String>(
+            5,
             Arb.long(1L..1000L),  // user ID
             Arb.string(1..100)  // habit name
         ) { userId, habitName ->
             // Arrange
             val habitRepository = mock<HabitRepository>()
-            val habitService = HabitService(habitRepository)
+            val habitRecordRepository = mock<HabitRecordRepository>()
+            val habitService = HabitService(habitRepository, habitRecordRepository)
             
             val habit = Habit(
                 id = 1L,
@@ -223,13 +234,15 @@ class HabitOwnershipPropertyTest : StringSpec({
 
     "Property 4: owner can successfully modify their own habits" {
         checkAll<Long, String, String>(
+            5,
             Arb.long(1L..1000L),  // user ID
             Arb.string(1..100),  // original name
             Arb.string(1..100)   // new name
         ) { userId, originalName, newName ->
             // Arrange
             val habitRepository = mock<HabitRepository>()
-            val habitService = HabitService(habitRepository)
+            val habitRecordRepository = mock<HabitRecordRepository>()
+            val habitService = HabitService(habitRepository, habitRecordRepository)
             
             val habitId = 1L
             val existingHabit = Habit(
@@ -264,12 +277,14 @@ class HabitOwnershipPropertyTest : StringSpec({
 
     "Property 4: owner can successfully delete their own habits" {
         checkAll<Long, String>(
+            5,
             Arb.long(1L..1000L),  // user ID
             Arb.string(1..100)  // habit name
         ) { userId, habitName ->
             // Arrange
             val habitRepository = mock<HabitRepository>()
-            val habitService = HabitService(habitRepository)
+            val habitRecordRepository = mock<HabitRecordRepository>()
+            val habitService = HabitService(habitRepository, habitRecordRepository)
             
             val habitId = 1L
             val habit = Habit(

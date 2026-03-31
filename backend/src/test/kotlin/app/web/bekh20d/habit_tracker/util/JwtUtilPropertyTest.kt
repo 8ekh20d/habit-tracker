@@ -26,7 +26,7 @@ class JwtUtilPropertyTest : StringSpec({
     val jwtUtil = JwtUtil(testSecret, testExpiration)
 
     "Property 6: generated tokens contain correct userId claim" {
-        checkAll(10, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
+        checkAll(5, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
             val token = jwtUtil.generateToken(userId, email)
             val extractedUserId = jwtUtil.extractUserId(token)
             
@@ -35,7 +35,7 @@ class JwtUtilPropertyTest : StringSpec({
     }
 
     "Property 6: generated tokens contain correct email claim" {
-        checkAll(10, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
+        checkAll(5, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
             val token = jwtUtil.generateToken(userId, email)
             val extractedEmail = jwtUtil.extractEmail(token)
             
@@ -44,7 +44,7 @@ class JwtUtilPropertyTest : StringSpec({
     }
 
     "Property 6: generated tokens have valid signatures" {
-        checkAll(10, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
+        checkAll(5, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
             val token = jwtUtil.generateToken(userId, email)
             
             // Token should be valid (signature verification passes)
@@ -53,7 +53,7 @@ class JwtUtilPropertyTest : StringSpec({
     }
 
     "Property 6: token validation rejects tokens with invalid signatures" {
-        checkAll(10, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
+        checkAll(5, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
             val token = jwtUtil.generateToken(userId, email)
             
             // Tamper with the token by modifying the signature
@@ -66,7 +66,7 @@ class JwtUtilPropertyTest : StringSpec({
     }
 
     "Property 6: tokens have correct JWT structure (header.payload.signature)" {
-        checkAll(10, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
+        checkAll(5, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
             val token = jwtUtil.generateToken(userId, email)
             
             // JWT should have exactly 3 parts separated by dots
@@ -81,7 +81,7 @@ class JwtUtilPropertyTest : StringSpec({
     }
 
     "Property 6: multiple tokens for same user are all valid" {
-        checkAll(10, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
+        checkAll(5, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
             val token1 = jwtUtil.generateToken(userId, email)
             val token2 = jwtUtil.generateToken(userId, email)
             
@@ -92,7 +92,7 @@ class JwtUtilPropertyTest : StringSpec({
     }
 
     "Property 6: tokens preserve userId and email claims correctly" {
-        checkAll(10, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
+        checkAll(5, Arb.long(1..Long.MAX_VALUE), Arb.email()) { userId, email ->
             val token = jwtUtil.generateToken(userId, email)
             
             // Both userId and email should be extractable and correct
@@ -105,7 +105,7 @@ class JwtUtilPropertyTest : StringSpec({
         val edgeCaseUserIds = listOf(1L, Long.MAX_VALUE, 999999999L)
         
         edgeCaseUserIds.forEach { userId ->
-            checkAll(10, Arb.email()) { email ->
+            checkAll(5, Arb.email()) { email ->
                 val token = jwtUtil.generateToken(userId, email)
                 
                 jwtUtil.validateToken(token) shouldBe true

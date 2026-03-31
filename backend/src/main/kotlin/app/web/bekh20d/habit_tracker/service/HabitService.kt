@@ -3,12 +3,17 @@ package app.web.bekh20d.habit_tracker.service
 import app.web.bekh20d.habit_tracker.exception.NotFoundException
 import app.web.bekh20d.habit_tracker.model.FrequencyType
 import app.web.bekh20d.habit_tracker.model.Habit
+import app.web.bekh20d.habit_tracker.model.HabitRecord
+import app.web.bekh20d.habit_tracker.model.RecordStatus
+import app.web.bekh20d.habit_tracker.repository.HabitRecordRepository
 import app.web.bekh20d.habit_tracker.repository.HabitRepository
 import org.springframework.stereotype.Service
+import java.time.LocalDate
 
 @Service
 class HabitService(
-    private val habitRepository: HabitRepository
+    private val habitRepository: HabitRepository,
+    private val habitRecordRepository: HabitRecordRepository
 ) {
 
     fun createHabit(userId: Long, name: String, frequencyType: FrequencyType): Habit {
@@ -53,5 +58,32 @@ class HabitService(
             ?: throw NotFoundException("Habit not found or access denied")
         
         habitRepository.delete(habit)
+    }
+
+    fun checkHabit(habitId: Long, userId: Long, date: LocalDate): HabitRecord {
+        // Verify habit ownership
+        val habit = habitRepository.findByIdAndUserId(habitId, userId)
+            ?: throw NotFoundException("Habit not found or access denied")
+        
+        // Check if record already exists for this date
+        val existingRecord = habitRecordRepository.findByHabitIdAndDate(habitId, date)
+        
+        // Upsert logic: update if exists, create if not
+        val record = if (existingRecord != null) {
+            HabitRecord(
+                id = existingRecord.id,
+                habitId = habitId,
+                date = date,
+                status = RecordStatus.DONE
+            )
+        } else {
+            HabitRecord(
+                habitId = habitId,
+                date = date,
+                status = RecordStatus.DONE
+            )
+        }
+        
+        return habitRecordRepository.save(record)
     }
 }

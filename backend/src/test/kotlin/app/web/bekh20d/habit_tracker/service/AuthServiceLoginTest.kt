@@ -3,6 +3,7 @@ package app.web.bekh20d.habit_tracker.service
 import app.web.bekh20d.habit_tracker.exception.InvalidCredentialsException
 import app.web.bekh20d.habit_tracker.exception.UnverifiedUserException
 import app.web.bekh20d.habit_tracker.model.User
+import app.web.bekh20d.habit_tracker.repository.EmailVerificationTokenRepository
 import app.web.bekh20d.habit_tracker.repository.UserRepository
 import app.web.bekh20d.habit_tracker.util.JwtUtil
 import org.junit.jupiter.api.Assertions.*
@@ -21,10 +22,16 @@ class AuthServiceLoginTest {
     private lateinit var userRepository: UserRepository
 
     @Mock
+    private lateinit var emailVerificationTokenRepository: EmailVerificationTokenRepository
+
+    @Mock
     private lateinit var passwordEncoder: PasswordEncoder
     
     @Mock
     private lateinit var jwtUtil: JwtUtil
+
+    @Mock
+    private lateinit var emailService: EmailService
 
     @InjectMocks
     private lateinit var authService: AuthService

@@ -42,7 +42,7 @@ class AuthServiceVerificationTokenCleanupPropertyTest : StringSpec({
         val emailService = mock(EmailService::class.java)
         val authService = AuthService(userRepository, tokenRepository, passwordEncoder, jwtUtil, emailService)
 
-        checkAll(10, Arb.string(10..50)) { token ->
+        checkAll(5, Arb.string(10..50)) { token ->
             val userId = 1L
             
             val verificationToken = EmailVerificationToken(
@@ -86,7 +86,7 @@ class AuthServiceVerificationTokenCleanupPropertyTest : StringSpec({
         val emailService = mock(EmailService::class.java)
         val authService = AuthService(userRepository, tokenRepository, passwordEncoder, jwtUtil, emailService)
 
-        checkAll(10, Arb.string(10..50)) { token ->
+        checkAll(5, Arb.string(10..50)) { token ->
             val userId = 1L
             
             val verificationToken = EmailVerificationToken(

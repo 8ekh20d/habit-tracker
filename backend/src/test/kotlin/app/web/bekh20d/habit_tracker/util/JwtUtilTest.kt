@@ -72,7 +72,7 @@ class JwtUtilTest {
         val email = "test@example.com"
         
         val token1 = jwtUtil.generateToken(userId, email)
-        Thread.sleep(10) // Small delay to ensure different timestamps
+        Thread.sleep(1000) // 1 second delay to ensure different timestamps
         val token2 = jwtUtil.generateToken(userId, email)
         
         assertNotEquals(token1, token2)

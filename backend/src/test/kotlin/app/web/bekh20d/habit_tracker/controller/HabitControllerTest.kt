@@ -1,10 +1,12 @@
 package app.web.bekh20d.habit_tracker.controller
 
+import app.web.bekh20d.habit_tracker.dto.CheckHabitRequest
 import app.web.bekh20d.habit_tracker.dto.CreateHabitRequest
 import app.web.bekh20d.habit_tracker.dto.LoginRequest
 import app.web.bekh20d.habit_tracker.dto.SignupRequest
 import app.web.bekh20d.habit_tracker.dto.UpdateHabitRequest
 import app.web.bekh20d.habit_tracker.model.User
+import app.web.bekh20d.habit_tracker.repository.HabitRecordRepository
 import app.web.bekh20d.habit_tracker.repository.HabitRepository
 import app.web.bekh20d.habit_tracker.repository.UserRepository
 import app.web.bekh20d.habit_tracker.service.AuthService
@@ -19,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,6 +41,9 @@ class HabitControllerTest {
     private lateinit var habitRepository: HabitRepository
 
     @Autowired
+    private lateinit var habitRecordRepository: HabitRecordRepository
+
+    @Autowired
     private lateinit var authService: AuthService
 
     private lateinit var authToken: String
@@ -46,6 +52,7 @@ class HabitControllerTest {
     fun setup() {
         userRepository.deleteAll()
         habitRepository.deleteAll()
+        habitRecordRepository.deleteAll()
 
         // Create and verify a test user
         authService.signup("test@example.com", "password123")
@@ -376,5 +383,135 @@ class HabitControllerTest {
         )
             .andExpect(status().isNotFound)
             .andExpect(jsonPath("$.message").value("Habit not found or access denied"))
+    }
+
+    @Test
+    fun `checkHabit should create new record`() {
+        // Create a habit first
+        val createRequest = CreateHabitRequest(name = "Morning Exercise")
+        val createResult = mockMvc.perform(
+            post("/habits")
+                .header("Authorization", "Bearer $authToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest))
+        ).andReturn()
+
+        val habitId = objectMapper.readTree(createResult.response.contentAsString).get("id").asLong()
+
+        // Check the habit for today
+        val checkRequest = CheckHabitRequest(date = LocalDate.now())
+        mockMvc.perform(
+            post("/habits/{id}/check", habitId)
+                .header("Authorization", "Bearer $authToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(checkRequest))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.habitId").value(habitId))
+            .andExpect(jsonPath("$.date").value(LocalDate.now().toString()))
+            .andExpect(jsonPath("$.status").value("DONE"))
+    }
+
+    @Test
+    fun `checkHabit should update existing record (upsert)`() {
+        // Create a habit first
+        val createRequest = CreateHabitRequest(name = "Morning Exercise")
+        val createResult = mockMvc.perform(
+            post("/habits")
+                .header("Authorization", "Bearer $authToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest))
+        ).andReturn()
+
+        val habitId = objectMapper.readTree(createResult.response.contentAsString).get("id").asLong()
+        val today = LocalDate.now()
+
+        // Check the habit for today (first time)
+        val checkRequest = CheckHabitRequest(date = today)
+        mockMvc.perform(
+            post("/habits/{id}/check", habitId)
+                .header("Authorization", "Bearer $authToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(checkRequest))
+        )
+            .andExpect(status().isOk)
+
+        // Check the habit for today again (should update, not create duplicate)
+        mockMvc.perform(
+            post("/habits/{id}/check", habitId)
+                .header("Authorization", "Bearer $authToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(checkRequest))
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.habitId").value(habitId))
+            .andExpect(jsonPath("$.date").value(today.toString()))
+            .andExpect(jsonPath("$.status").value("DONE"))
+
+        // Verify only one record exists
+        val records = habitRecordRepository.findByHabitIdOrderByDateDesc(habitId)
+        assert(records.size == 1)
+        assert(records[0].date == today)
+    }
+
+    @Test
+    fun `checkHabit for non-owned habit should return 404 Not Found`() {
+        // Create a habit for the first user
+        val createRequest = CreateHabitRequest(name = "User1 Habit")
+        val createResult = mockMvc.perform(
+            post("/habits")
+                .header("Authorization", "Bearer $authToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest))
+        ).andReturn()
+
+        val habitId = objectMapper.readTree(createResult.response.contentAsString).get("id").asLong()
+
+        // Create a second user
+        authService.signup("user2@example.com", "password123")
+        val user2 = userRepository.findByEmail("user2@example.com")!!
+        val verifiedUser2 = User(
+            id = user2.id,
+            email = user2.email,
+            password = user2.password,
+            verified = true,
+            createdAt = user2.createdAt
+        )
+        userRepository.save(verifiedUser2)
+        val authToken2 = authService.login("user2@example.com", "password123")
+
+        // Try to check first user's habit with second user's token
+        val checkRequest = CheckHabitRequest(date = LocalDate.now())
+        mockMvc.perform(
+            post("/habits/{id}/check", habitId)
+                .header("Authorization", "Bearer $authToken2")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(checkRequest))
+        )
+            .andExpect(status().isNotFound)
+            .andExpect(jsonPath("$.message").value("Habit not found or access denied"))
+    }
+
+    @Test
+    fun `checkHabit without authentication should return 401 Unauthorized`() {
+        // Create a habit first
+        val createRequest = CreateHabitRequest(name = "Morning Exercise")
+        val createResult = mockMvc.perform(
+            post("/habits")
+                .header("Authorization", "Bearer $authToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest))
+        ).andReturn()
+
+        val habitId = objectMapper.readTree(createResult.response.contentAsString).get("id").asLong()
+
+        // Try to check habit without authentication
+        val checkRequest = CheckHabitRequest(date = LocalDate.now())
+        mockMvc.perform(
+            post("/habits/{id}/check", habitId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(checkRequest))
+        )
+            .andExpect(status().isUnauthorized)
     }
 }

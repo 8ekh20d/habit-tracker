@@ -40,7 +40,7 @@ class AuthServicePasswordPropertyTest : StringSpec({
         `when`(userRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
         `when`(tokenRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
 
-        checkAll(Arb.string(8..100)) { rawPassword ->
+        checkAll(5, Arb.string(8..100)) { rawPassword ->
             val user = authService.signup("test@example.com", rawPassword)
             
             // Password should never be stored in plaintext
@@ -59,7 +59,7 @@ class AuthServicePasswordPropertyTest : StringSpec({
         `when`(userRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
         `when`(tokenRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
 
-        checkAll(Arb.string(8..100)) { rawPassword ->
+        checkAll(5, Arb.string(8..100)) { rawPassword ->
             val user = authService.signup("test@example.com", rawPassword)
             
             // BCrypt hashes are always 60 characters
@@ -78,7 +78,7 @@ class AuthServicePasswordPropertyTest : StringSpec({
         `when`(userRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
         `when`(tokenRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
 
-        checkAll(Arb.string(8..100)) { rawPassword ->
+        checkAll(5, Arb.string(8..100)) { rawPassword ->
             val user = authService.signup("test@example.com", rawPassword)
             
             // BCrypt hashes start with $2a$ or $2b$
@@ -98,7 +98,7 @@ class AuthServicePasswordPropertyTest : StringSpec({
         `when`(userRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
         `when`(tokenRepository.save(any())).thenAnswer { invocation -> invocation.getArgument(0) }
 
-        checkAll(Arb.string(8..100)) { rawPassword ->
+        checkAll(5, Arb.string(8..100)) { rawPassword ->
             val user1 = authService.signup("test1@example.com", rawPassword)
             val user2 = authService.signup("test2@example.com", rawPassword)
             

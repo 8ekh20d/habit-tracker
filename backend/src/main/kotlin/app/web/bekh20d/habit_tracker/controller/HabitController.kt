@@ -1,6 +1,8 @@
 package app.web.bekh20d.habit_tracker.controller
 
+import app.web.bekh20d.habit_tracker.dto.CheckHabitRequest
 import app.web.bekh20d.habit_tracker.dto.CreateHabitRequest
+import app.web.bekh20d.habit_tracker.dto.HabitRecordResponse
 import app.web.bekh20d.habit_tracker.dto.HabitResponse
 import app.web.bekh20d.habit_tracker.dto.UpdateHabitRequest
 import app.web.bekh20d.habit_tracker.model.FrequencyType
@@ -76,5 +78,20 @@ class HabitController(
     ): ResponseEntity<Void> {
         habitService.deleteHabit(id, userId)
         return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/{id}/check")
+    fun checkHabit(
+        @PathVariable id: Long,
+        @AuthenticationPrincipal userId: Long,
+        @Valid @RequestBody request: CheckHabitRequest
+    ): ResponseEntity<HabitRecordResponse> {
+        val record = habitService.checkHabit(id, userId, request.date)
+        val response = HabitRecordResponse(
+            habitId = record.habitId,
+            date = record.date,
+            status = record.status.name
+        )
+        return ResponseEntity.ok(response)
     }
 }
