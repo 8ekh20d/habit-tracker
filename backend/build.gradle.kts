@@ -42,6 +42,7 @@ dependencies {
 	testImplementation("io.kotest:kotest-assertions-core:5.8.0")
 	testImplementation("io.kotest:kotest-property:5.8.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testRuntimeOnly("com.h2database:h2")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
 }
 
