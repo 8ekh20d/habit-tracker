@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service
 @Service
 class EmailService(
     private val mailSender: JavaMailSender,
-    @Value("\${app.frontend.url:http://localhost:3000}") private val frontendUrl: String
+    @Value("\${app.frontend.url:http://localhost:3000}") private val frontendUrl: String,
+    @Value("\${app.email.from:noreply@habittracker.com}") private val fromEmail: String
 ) {
     
     private val logger = LoggerFactory.getLogger(EmailService::class.java)
@@ -19,6 +20,7 @@ class EmailService(
             val verificationLink = "$frontendUrl/verify-email?token=$token"
             
             val message = SimpleMailMessage()
+            message.from = fromEmail
             message.setTo(email)
             message.subject = "Verify Your Email - Habit Tracker"
             message.text = """
@@ -31,10 +33,13 @@ class EmailService(
                 This link will expire in 24 hours.
                 
                 If you did not create an account, please ignore this email.
+                
+                Best regards,
+                The Habit Tracker Team
             """.trimIndent()
             
             mailSender.send(message)
-            logger.info("Verification email sent to: $email")
+            logger.info("Verification email sent successfully to: $email")
         } catch (e: Exception) {
             logger.error("Failed to send verification email to: $email", e)
             // Don't fail signup if email sending fails

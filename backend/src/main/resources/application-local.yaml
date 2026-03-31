@@ -1,0 +1,12 @@
+spring:
+  mail:
+    host: smtp.mailgun.org
+    port: 587
+    username: ${MAIL_USERNAME:your-mailgun-username}
+    password: ${MAIL_PASSWORD:your-mailgun-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true

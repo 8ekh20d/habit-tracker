@@ -11,6 +11,7 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -45,6 +46,12 @@ class AuthController(
     
     @PostMapping("/verify-email")
     fun verifyEmail(@RequestParam token: String): ResponseEntity<MessageResponse> {
+        authService.verifyEmail(token)
+        return ResponseEntity.ok(MessageResponse("Email verified successfully. You can now login."))
+    }
+    
+    @GetMapping("/verify-email")
+    fun verifyEmailGet(@RequestParam token: String): ResponseEntity<MessageResponse> {
         authService.verifyEmail(token)
         return ResponseEntity.ok(MessageResponse("Email verified successfully. You can now login."))
     }
