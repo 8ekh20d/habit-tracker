@@ -381,8 +381,8 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
 - [x] 15. Checkpoint - Ensure all backend tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 16. Frontend - Project Setup and Authentication
-  - [ ] 16.1 Initialize React project with routing and API client
+- [x] 16. Frontend - Project Setup and Authentication
+  - [x] 16.1 Initialize React project with routing and API client
     - Create React app using Vite
     - Install dependencies: react-router-dom, axios
     - Configure axios base URL to backend API
@@ -391,7 +391,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 24.1, 24.3, 28.1_
     - _Commit: feat(frontend): initialize React project_
 
-  - [ ] 16.2 Create authentication context and token storage
+  - [x] 16.2 Create authentication context and token storage
     - Create AuthContext with login, logout, and user state
     - Implement JWT token storage in localStorage
     - Implement token retrieval on page refresh
@@ -400,7 +400,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 23.1, 23.2, 23.3, 23.4, 28.2, 28.3_
     - _Commit: feat(frontend): implement auth pages_
 
-  - [ ] 16.3 Create signup and login pages
+  - [x] 16.3 Create signup and login pages
     - Create SignupPage with email and password inputs
     - Add form validation for email format and password length
     - Handle signup API call and display success/error messages
