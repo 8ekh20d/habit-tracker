@@ -36,3 +36,8 @@ export const checkHabit = async (id: number, date: string): Promise<HabitRecord>
   const response = await axiosInstance.post(`/habits/${id}/check`, { date });
   return response.data;
 };
+
+export const getHabitRecords = async (): Promise<HabitRecord[]> => {
+  const response = await axiosInstance.get('/habits/records');
+  return response.data;
+};

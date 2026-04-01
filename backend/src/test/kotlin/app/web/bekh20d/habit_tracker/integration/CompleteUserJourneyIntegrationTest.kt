@@ -351,4 +351,88 @@ class CompleteUserJourneyIntegrationTest {
         assertEquals(5, statsGap.habits[0].currentStreak)
         assertEquals(6, statsGap.habits[0].totalCompletions)
     }
+
+    @Test
+    fun `get habit records returns all records for user`() {
+        // Setup: Create verified user and login
+        val testEmail = "records@example.com"
+        val testPassword = "password123"
+        
+        val signupRequest = SignupRequest(email = testEmail, password = testPassword)
+        mockMvc.perform(
+            post("/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signupRequest))
+        )
+
+        val token = emailVerificationTokenRepository.findAll().first()
+        mockMvc.perform(post("/auth/verify-email").param("token", token.token))
+
+        val loginRequest = LoginRequest(email = testEmail, password = testPassword)
+        val loginResponse = mockMvc.perform(
+            post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest))
+        ).andReturn()
+
+        val loginData = objectMapper.readValue(
+            loginResponse.response.contentAsString,
+            LoginResponse::class.java
+        )
+        val jwtToken = loginData.accessToken
+
+        // Create two habits
+        val habit1Request = CreateHabitRequest(name = "Habit 1")
+        val habit1Response = mockMvc.perform(
+            post("/habits")
+                .header("Authorization", "Bearer $jwtToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(habit1Request))
+        ).andReturn()
+        val habit1 = objectMapper.readValue(habit1Response.response.contentAsString, HabitResponse::class.java)
+
+        val habit2Request = CreateHabitRequest(name = "Habit 2")
+        val habit2Response = mockMvc.perform(
+            post("/habits")
+                .header("Authorization", "Bearer $jwtToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(habit2Request))
+        ).andReturn()
+        val habit2 = objectMapper.readValue(habit2Response.response.contentAsString, HabitResponse::class.java)
+
+        // Check habits for today
+        val today = LocalDate.now()
+        mockMvc.perform(
+            post("/habits/${habit1.id}/check")
+                .header("Authorization", "Bearer $jwtToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(CheckHabitRequest(date = today)))
+        )
+
+        mockMvc.perform(
+            post("/habits/${habit2.id}/check")
+                .header("Authorization", "Bearer $jwtToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(CheckHabitRequest(date = today)))
+        )
+
+        // Get all habit records
+        val recordsResponse = mockMvc.perform(
+            get("/habits/records")
+                .header("Authorization", "Bearer $jwtToken")
+        )
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").isArray)
+            .andExpect(jsonPath("$.length()").value(2))
+            .andReturn()
+
+        val records = objectMapper.readValue(
+            recordsResponse.response.contentAsString,
+            Array<HabitRecordResponse>::class.java
+        )
+
+        assertEquals(2, records.size)
+        assertTrue(records.any { it.habitId == habit1.id && it.date == today })
+        assertTrue(records.any { it.habitId == habit2.id && it.date == today })
+    }
 }

@@ -2,6 +2,9 @@
 .vscode/
 .idea/
 
+# Kiro files
+.kiro/
+
 # Test results and temporary files
 *_TEST_RESULTS.md
 

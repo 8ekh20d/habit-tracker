@@ -94,4 +94,19 @@ class HabitController(
         )
         return ResponseEntity.ok(response)
     }
+
+    @GetMapping("/records")
+    fun getHabitRecords(
+        @AuthenticationPrincipal userId: Long
+    ): ResponseEntity<List<HabitRecordResponse>> {
+        val records = habitService.getHabitRecords(userId)
+        val response = records.map { record ->
+            HabitRecordResponse(
+                habitId = record.habitId,
+                date = record.date,
+                status = record.status.name
+            )
+        }
+        return ResponseEntity.ok(response)
+    }
 }

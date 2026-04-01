@@ -91,4 +91,15 @@ class HabitService(
         
         return habitRecordRepository.save(record)
     }
+
+    fun getHabitRecords(userId: Long): List<HabitRecord> {
+        // Get all habits for the user
+        val habits = habitRepository.findByUserId(userId)
+        val habitIds = habits.map { it.id }
+        
+        // Get all records for these habits
+        return habitIds.flatMap { habitId ->
+            habitRecordRepository.findByHabitIdOrderByDateDesc(habitId)
+        }
+    }
 }

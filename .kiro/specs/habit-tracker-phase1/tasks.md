@@ -411,8 +411,8 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 23.1, 24.2, 25.5_
     - _Commit: feat(frontend): implement auth pages_
 
-- [ ] 17. Frontend - Habit Management UI
-  - [ ] 17.1 Create habit list page with CRUD operations
+- [x] 17. Frontend - Habit Management UI
+  - [x] 17.1 Create habit list page with CRUD operations
     - Create HabitsPage component
     - Fetch and display all habits on mount
     - Create HabitForm component for creating new habits
@@ -424,7 +424,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 25.1, 25.2, 25.3, 25.4, 25.5, 24.2, 24.4_
     - _Commit: feat(frontend): implement habit management UI_
 
-  - [ ] 17.2 Add daily tracking functionality to habit list
+  - [x] 17.2 Add daily tracking functionality to habit list
     - Add check button next to each habit
     - Implement check habit API call for today's date
     - Display visual indicator for habits completed today
