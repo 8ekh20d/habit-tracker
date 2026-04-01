@@ -15,6 +15,7 @@ const HabitsModern: React.FC = () => {
   const [editingName, setEditingName] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [collapsedHabits, setCollapsedHabits] = useState<Set<number>>(new Set());
   const navigate = useNavigate();
   const { logout, token } = useAuth();
   const userEmail = getEmailFromToken(token);
@@ -213,13 +214,25 @@ const HabitsModern: React.FC = () => {
     navigate('/login');
   };
 
+  const toggleCollapse = (habitId: number) => {
+    setCollapsedHabits(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(habitId)) {
+        newSet.delete(habitId);
+      } else {
+        newSet.add(habitId);
+      }
+      return newSet;
+    });
+  };
+
   const today = getTodayString();
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: theme.colors.gray[50] }}>
       <Navigation userEmail={userEmail} onLogout={handleLogout} />
       
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: theme.spacing.xl }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: theme.spacing.xl }}>
         <div style={{ marginBottom: theme.spacing.xl }}>
           <h1 style={{ 
             fontSize: '32px',
@@ -348,6 +361,7 @@ const HabitsModern: React.FC = () => {
             {habits.map((habit) => {
               const isCompletedToday = isHabitCompletedForDate(habit.id, today);
               const currentStreak = calculateStreak(habit.id);
+              const isCollapsed = collapsedHabits.has(habit.id);
               
               return (
                 <div
@@ -412,8 +426,9 @@ const HabitsModern: React.FC = () => {
                     </div>
                   ) : (
                     <>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: theme.spacing.lg }}>
-                        <div style={{ flex: 1 }}>
+                      {/* Header row with collapse button always on right */}
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: isCollapsed ? 0 : theme.spacing.lg }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md, marginBottom: theme.spacing.sm, flexWrap: 'wrap' }}>
                             <h3 style={{ 
                               fontSize: '20px',
@@ -463,75 +478,108 @@ const HabitsModern: React.FC = () => {
                             })}
                           </p>
                         </div>
-                        <div style={{ display: 'flex', gap: theme.spacing.sm, flexWrap: 'wrap' }}>
-                          <button
-                            onClick={() => handleCheckHabit(habit.id)}
-                            disabled={isCompletedToday}
-                            style={{
-                              padding: '10px 20px',
-                              backgroundColor: isCompletedToday ? theme.colors.gray[200] : theme.colors.success,
-                              color: isCompletedToday ? theme.colors.gray[500] : theme.colors.white,
-                              border: 'none',
-                              borderRadius: theme.borderRadius.md,
+                        
+                        {/* Collapse button - always stays on right */}
+                        <button
+                          onClick={() => toggleCollapse(habit.id)}
+                          style={{
+                            padding: '8px',
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontSize: '40px',
+                            color: theme.colors.gray[400],
+                            transition: `all ${theme.transitions.fast}`,
+                            flexShrink: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginLeft: theme.spacing.md,
+                          }}
+                          title={isCollapsed ? 'Expand' : 'Collapse'}
+                        >
+                          {isCollapsed ? '▾' : '▴'}
+                        </button>
+                      </div>
+
+                      {/* Content area - only shown when expanded */}
+                      {!isCollapsed && (
+                        <div style={{ display: 'flex', gap: theme.spacing.xl, alignItems: 'flex-start' }}>
+                          {/* Left side - Action buttons */}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', gap: theme.spacing.sm, flexWrap: 'wrap' }}>
+                              <button
+                                onClick={() => handleCheckHabit(habit.id)}
+                                disabled={isCompletedToday}
+                                style={{
+                                  padding: '10px 20px',
+                                  backgroundColor: isCompletedToday ? theme.colors.gray[200] : theme.colors.success,
+                                  color: isCompletedToday ? theme.colors.gray[500] : theme.colors.white,
+                                  border: 'none',
+                                  borderRadius: theme.borderRadius.md,
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  cursor: isCompletedToday ? 'not-allowed' : 'pointer',
+                                  transition: `all ${theme.transitions.fast}`,
+                                }}
+                              >
+                                {isCompletedToday ? '✓ Completed' : 'Mark Done'}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingId(habit.id);
+                                  setEditingName(habit.name);
+                                }}
+                                style={{ 
+                                  padding: '10px 20px',
+                                  backgroundColor: theme.colors.gray[100],
+                                  color: theme.colors.gray[700],
+                                  border: 'none',
+                                  borderRadius: theme.borderRadius.md,
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteHabit(habit.id)}
+                                style={{
+                                  padding: '10px 20px',
+                                  backgroundColor: theme.colors.dangerLight,
+                                  color: theme.colors.danger,
+                                  border: 'none',
+                                  borderRadius: theme.borderRadius.md,
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {/* Right side - Calendar */}
+                          <div style={{ 
+                            padding: theme.spacing.lg,
+                            backgroundColor: theme.colors.gray[50],
+                            borderRadius: theme.borderRadius.md,
+                          }}>
+                            <h4 style={{ 
                               fontSize: '14px',
                               fontWeight: '600',
-                              cursor: isCompletedToday ? 'not-allowed' : 'pointer',
-                              transition: `all ${theme.transitions.fast}`,
-                            }}
-                          >
-                            {isCompletedToday ? '✓ Completed' : 'Mark Done'}
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEditingId(habit.id);
-                              setEditingName(habit.name);
-                            }}
-                            style={{ 
-                              padding: '10px 20px',
-                              backgroundColor: theme.colors.gray[100],
                               color: theme.colors.gray[700],
-                              border: 'none',
-                              borderRadius: theme.borderRadius.md,
-                              fontSize: '14px',
-                              fontWeight: '600',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteHabit(habit.id)}
-                            style={{
-                              padding: '10px 20px',
-                              backgroundColor: theme.colors.dangerLight,
-                              color: theme.colors.danger,
-                              border: 'none',
-                              borderRadius: theme.borderRadius.md,
-                              fontSize: '14px',
-                              fontWeight: '600',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Delete
-                          </button>
+                              marginBottom: theme.spacing.sm,
+                              marginTop: 0,
+                            }}>
+                              Last 5 Weeks
+                            </h4>
+                            <HabitCalendar habitRecords={habitRecords} habitId={habit.id} />
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div style={{ 
-                        padding: theme.spacing.lg,
-                        backgroundColor: theme.colors.gray[50],
-                        borderRadius: theme.borderRadius.md,
-                      }}>
-                        <h4 style={{ 
-                          fontSize: '14px',
-                          fontWeight: '600',
-                          color: theme.colors.gray[700],
-                          marginBottom: theme.spacing.md,
-                        }}>
-                          Last 30 Days
-                        </h4>
-                        <HabitCalendar habitRecords={habitRecords} habitId={habit.id} />
-                      </div>
+                      )}
                     </>
                   )}
                 </div>
