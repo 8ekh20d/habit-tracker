@@ -17,6 +17,17 @@ const Habits: React.FC = () => {
   const { logout, token } = useAuth();
   const userEmail = getEmailFromToken(token);
 
+  // Auto-clear messages after 5 seconds
+  useEffect(() => {
+    if (message || error) {
+      const timer = setTimeout(() => {
+        setMessage('');
+        setError('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [message, error]);
+
   useEffect(() => {
     loadHabits();
     loadHabitRecords();
