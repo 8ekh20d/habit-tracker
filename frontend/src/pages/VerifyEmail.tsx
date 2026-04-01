@@ -6,6 +6,7 @@ const VerifyEmail: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [message, setMessage] = useState('Verifying your email...');
   const [error, setError] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,26 +21,80 @@ const VerifyEmail: React.FC = () => {
       try {
         const response = await verifyEmail(token);
         setMessage(response.message);
-        setTimeout(() => navigate('/login'), 3000);
+        setIsVerified(true);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Verification failed');
       }
     };
 
     verify();
-  }, [searchParams, navigate]);
+  }, [searchParams]);
+
+  const handleContinue = () => {
+    navigate('/login');
+  };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', textAlign: 'center' }}>
-      <h2>Email Verification</h2>
+    <div style={{ 
+      maxWidth: '500px', 
+      margin: '100px auto', 
+      padding: '40px', 
+      textAlign: 'center',
+      border: '1px solid #ddd',
+      borderRadius: '8px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+    }}>
       {error ? (
-        <p style={{ color: 'red', marginTop: '20px' }}>{error}</p>
+        <>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>❌</div>
+          <h2 style={{ color: '#f44336', marginBottom: '20px' }}>Verification Failed</h2>
+          <p style={{ color: '#666', marginBottom: '30px', fontSize: '16px' }}>{error}</p>
+          <button
+            onClick={handleContinue}
+            style={{
+              padding: '12px 30px',
+              fontSize: '16px',
+              backgroundColor: '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Go to Login
+          </button>
+        </>
+      ) : isVerified ? (
+        <>
+          <div style={{ fontSize: '64px', marginBottom: '20px' }}>✅</div>
+          <h2 style={{ color: '#4CAF50', marginBottom: '20px' }}>Email Verified Successfully!</h2>
+          <p style={{ color: '#666', marginBottom: '30px', fontSize: '16px' }}>
+            Your email has been verified. You can now log in to your account.
+          </p>
+          <button
+            onClick={handleContinue}
+            style={{
+              padding: '12px 30px',
+              fontSize: '16px',
+              backgroundColor: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#45a049'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
+          >
+            Continue to Login
+          </button>
+        </>
       ) : (
-        <p style={{ color: 'green', marginTop: '20px' }}>{message}</p>
+        <>
+          <div style={{ fontSize: '48px', marginBottom: '20px' }}>⏳</div>
+          <h2 style={{ marginBottom: '20px' }}>Verifying Email</h2>
+          <p style={{ color: '#666', fontSize: '16px' }}>{message}</p>
+        </>
       )}
-      <p style={{ marginTop: '20px' }}>
-        <a href="/login">Go to Login</a>
-      </p>
     </div>
   );
 };
