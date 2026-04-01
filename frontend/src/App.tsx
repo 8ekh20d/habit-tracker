@@ -5,7 +5,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import VerifyEmail from './pages/VerifyEmail';
-import Habits from './pages/Habits';
+import Habits from './pages/HabitsModern';
 import Stats from './pages/Stats';
 
 function App() {
