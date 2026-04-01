@@ -218,7 +218,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 8.6, 8.7, 13.2, 21.1, 21.3_
     - _Commit: feat(habits): add habit record entity_
 
-  - [ ] 8.2 Implement habit check endpoint with upsert logic
+  - [x] 8.2 Implement habit check endpoint with upsert logic
     - Add `checkHabit(habitId: Long, userId: Long, date: LocalDate): HabitRecord` to HabitService
     - Verify habit ownership before creating record
     - Implement upsert logic: check if record exists, update if yes, create if no
