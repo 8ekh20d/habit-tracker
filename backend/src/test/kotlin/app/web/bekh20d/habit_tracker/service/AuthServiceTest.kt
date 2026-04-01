@@ -1,6 +1,8 @@
 package app.web.bekh20d.habit_tracker.service
 
+import app.web.bekh20d.habit_tracker.exception.InvalidCredentialsException
 import app.web.bekh20d.habit_tracker.exception.InvalidTokenException
+import app.web.bekh20d.habit_tracker.exception.UnverifiedUserException
 import app.web.bekh20d.habit_tracker.model.EmailVerificationToken
 import app.web.bekh20d.habit_tracker.model.User
 import app.web.bekh20d.habit_tracker.repository.EmailVerificationTokenRepository
@@ -9,10 +11,12 @@ import app.web.bekh20d.habit_tracker.util.JwtUtil
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentCaptor
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.time.LocalDateTime
 import java.util.*
@@ -195,5 +199,163 @@ class AuthServiceTest {
 
         // Assert
         verify(emailVerificationTokenRepository, times(1)).delete(verificationToken)
+    }
+
+    @Test
+    fun `signup should generate verification token with 24-hour expiry`() {
+        // Arrange
+        val email = "test@example.com"
+        val rawPassword = "password123"
+        val hashedPassword = "\$2a\$10\$hashedPasswordExample"
+        val tokenCaptor = ArgumentCaptor.forClass(EmailVerificationToken::class.java)
+
+        `when`(passwordEncoder.encode(rawPassword)).thenReturn(hashedPassword)
+        `when`(userRepository.save(any(User::class.java))).thenAnswer { invocation ->
+            val user = invocation.getArgument<User>(0)
+            User(
+                id = 1L,
+                email = user.email,
+                password = user.password,
+                verified = user.verified,
+                createdAt = user.createdAt
+            )
+        }
+        `when`(emailVerificationTokenRepository.save(any(EmailVerificationToken::class.java))).thenAnswer { invocation ->
+            invocation.getArgument(0)
+        }
+
+        // Act
+        val beforeSignup = LocalDateTime.now()
+        authService.signup(email, rawPassword)
+        val afterSignup = LocalDateTime.now()
+
+        // Assert
+        verify(emailVerificationTokenRepository, times(1)).save(tokenCaptor.capture())
+        val savedToken = tokenCaptor.value
+        
+        assertNotNull(savedToken.token)
+        assertEquals(1L, savedToken.userId)
+        
+        // Verify expiry is approximately 24 hours from now (within 1 minute tolerance)
+        val expectedExpiry = beforeSignup.plusHours(24)
+        val actualExpiry = savedToken.expiryDate
+        assertTrue(actualExpiry.isAfter(expectedExpiry.minusMinutes(1)))
+        assertTrue(actualExpiry.isBefore(afterSignup.plusHours(24).plusMinutes(1)))
+    }
+
+    @Test
+    fun `signup with duplicate email should throw exception`() {
+        // Arrange
+        val email = "duplicate@example.com"
+        val rawPassword = "password123"
+        val hashedPassword = "\$2a\$10\$hashedPasswordExample"
+
+        `when`(passwordEncoder.encode(rawPassword)).thenReturn(hashedPassword)
+        `when`(userRepository.save(any(User::class.java))).thenThrow(DataIntegrityViolationException("Duplicate email"))
+
+        // Act & Assert
+        assertThrows(DataIntegrityViolationException::class.java) {
+            authService.signup(email, rawPassword)
+        }
+
+        verify(passwordEncoder, times(1)).encode(rawPassword)
+        verify(userRepository, times(1)).save(any(User::class.java))
+    }
+
+    @Test
+    fun `login with valid credentials should return JWT token`() {
+        // Arrange
+        val email = "test@example.com"
+        val rawPassword = "password123"
+        val hashedPassword = "\$2a\$10\$hashedPasswordExample"
+        val expectedToken = "jwt.token.here"
+        val user = User(
+            id = 1L,
+            email = email,
+            password = hashedPassword,
+            verified = true
+        )
+
+        `when`(userRepository.findByEmail(email)).thenReturn(user)
+        `when`(passwordEncoder.matches(rawPassword, hashedPassword)).thenReturn(true)
+        `when`(jwtUtil.generateToken(user.id, user.email)).thenReturn(expectedToken)
+
+        // Act
+        val result = authService.login(email, rawPassword)
+
+        // Assert
+        assertEquals(expectedToken, result)
+        verify(userRepository, times(1)).findByEmail(email)
+        verify(passwordEncoder, times(1)).matches(rawPassword, hashedPassword)
+        verify(jwtUtil, times(1)).generateToken(user.id, user.email)
+    }
+
+    @Test
+    fun `login with invalid credentials should throw InvalidCredentialsException`() {
+        // Arrange
+        val email = "test@example.com"
+        val rawPassword = "wrongPassword"
+        val hashedPassword = "\$2a\$10\$hashedPasswordExample"
+        val user = User(
+            id = 1L,
+            email = email,
+            password = hashedPassword,
+            verified = true
+        )
+
+        `when`(userRepository.findByEmail(email)).thenReturn(user)
+        `when`(passwordEncoder.matches(rawPassword, hashedPassword)).thenReturn(false)
+
+        // Act & Assert
+        assertThrows(InvalidCredentialsException::class.java) {
+            authService.login(email, rawPassword)
+        }
+
+        verify(userRepository, times(1)).findByEmail(email)
+        verify(passwordEncoder, times(1)).matches(rawPassword, hashedPassword)
+        verify(jwtUtil, never()).generateToken(anyLong(), anyString())
+    }
+
+    @Test
+    fun `login with non-existent email should throw InvalidCredentialsException`() {
+        // Arrange
+        val email = "nonexistent@example.com"
+        val rawPassword = "password123"
+
+        `when`(userRepository.findByEmail(email)).thenReturn(null)
+
+        // Act & Assert
+        assertThrows(InvalidCredentialsException::class.java) {
+            authService.login(email, rawPassword)
+        }
+
+        verify(userRepository, times(1)).findByEmail(email)
+        verify(passwordEncoder, never()).matches(anyString(), anyString())
+        verify(jwtUtil, never()).generateToken(anyLong(), anyString())
+    }
+
+    @Test
+    fun `login with unverified user should throw UnverifiedUserException`() {
+        // Arrange
+        val email = "unverified@example.com"
+        val rawPassword = "password123"
+        val hashedPassword = "\$2a\$10\$hashedPasswordExample"
+        val user = User(
+            id = 1L,
+            email = email,
+            password = hashedPassword,
+            verified = false // User not verified
+        )
+
+        `when`(userRepository.findByEmail(email)).thenReturn(user)
+
+        // Act & Assert
+        assertThrows(UnverifiedUserException::class.java) {
+            authService.login(email, rawPassword)
+        }
+
+        verify(userRepository, times(1)).findByEmail(email)
+        verify(passwordEncoder, never()).matches(anyString(), anyString())
+        verify(jwtUtil, never()).generateToken(anyLong(), anyString())
     }
 }

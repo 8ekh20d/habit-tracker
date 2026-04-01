@@ -57,6 +57,11 @@ class HabitService(
         val habit = habitRepository.findByIdAndUserId(habitId, userId)
             ?: throw NotFoundException("Habit not found or access denied")
         
+        // Delete all associated habit records first (cascading deletion)
+        val records = habitRecordRepository.findByHabitIdOrderByDateDesc(habitId)
+        habitRecordRepository.deleteAll(records)
+        
+        // Then delete the habit
         habitRepository.delete(habit)
     }
 

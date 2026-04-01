@@ -293,28 +293,28 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
     - _Commit: feat(stats): implement stats endpoint_
 
-  - [ ] 11.2 Write property test for statistics completeness
+  - [x] 11.2 Write property test for statistics completeness
     - **Property 12: Statistics Completeness**
     - **Validates: Requirements 10.1, 5.1**
     - Test that stats include all user habits
     - Test that stats do not include other users' habits
 
-  - [ ] 11.3 Write property test for dynamic streak calculation
+  - [x] 11.3 Write property test for dynamic streak calculation
     - **Property 13: Dynamic Streak Calculation**
     - **Validates: Requirements 10.4, 10.5**
     - Test that streaks are calculated from records, not stored
     - Test that streak changes when new records are added
 
-  - [ ] 11.4 Write unit tests for statistics endpoint
+  - [x] 11.4 Write unit tests for statistics endpoint
     - Test stats return data for all user habits
     - Test stats include correct streak and total completions
     - Test stats without authentication returns 401
 
-- [ ] 12. Checkpoint - Ensure statistics work correctly
+- [x] 12. Checkpoint - Ensure statistics work correctly
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 13. Backend Testing - Unit Tests
-  - [ ] 13.1 Write comprehensive unit tests for AuthService
+  - [x] 13.1 Write comprehensive unit tests for AuthService
     - Test signup creates user with hashed password and verified=false
     - Test signup generates verification token with 24-hour expiry
     - Test signup with duplicate email throws exception
@@ -326,7 +326,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - Test login with unverified user throws exception
     - _Requirements: 1.1, 1.2, 1.3, 1.6, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3_
 
-  - [ ] 13.2 Write comprehensive unit tests for HabitService
+  - [x] 13.2 Write comprehensive unit tests for HabitService
     - Test createHabit with DAILY frequency
     - Test createHabit with non-DAILY frequency throws exception
     - Test getHabits returns only user's habits
@@ -339,7 +339,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - Test checkHabit for non-owned habit throws exception
     - _Requirements: 4.1, 4.5, 5.1, 5.2, 6.1, 6.2, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3_
 
-  - [ ] 13.3 Write comprehensive unit tests for StatsService
+  - [x] 13.3 Write comprehensive unit tests for StatsService
     - Test calculateStreak with consecutive days from today
     - Test calculateStreak with consecutive days from yesterday
     - Test calculateStreak stops at gap
@@ -349,7 +349,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - Test calculateStats includes correct streaks and totals
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 10.1, 10.2, 10.4_
 
-  - [ ] 13.4 Write unit tests for JwtUtil
+  - [x] 13.4 Write unit tests for JwtUtil
     - Test generateToken creates valid JWT with correct claims
     - Test validateToken returns true for valid token
     - Test validateToken returns false for expired token
@@ -358,27 +358,27 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - Test extractEmail returns correct email
     - _Requirements: 3.4, 3.5, 3.6, 3.7, 12.3, 12.4, 12.5_
 
-- [ ] 14. Backend Testing - Integration Tests
-  - [ ] 14.1 Write integration test for complete user journey
+- [x] 14. Backend Testing - Integration Tests
+  - [x] 14.1 Write integration test for complete user journey
     - Test signup → verify email → login → create habit → check habit → get stats
     - Verify JWT token is returned and works for authenticated requests
     - Verify streak calculation is correct after checking habits
     - Use real database (H2 or Testcontainers with MariaDB)
     - _Requirements: 1.1, 2.1, 3.1, 4.1, 8.1, 10.1_
 
-  - [ ] 14.2 Write integration test for authorization enforcement
+  - [x] 14.2 Write integration test for authorization enforcement
     - Test user A cannot access user B's habits
     - Test user A cannot modify user B's habits
     - Test user A cannot delete user B's habits
     - Test user A cannot check user B's habits
     - _Requirements: 15.1, 15.2, 15.3, 15.5_
 
-  - [ ] 14.3 Write integration test for cascading deletion
+  - [x] 14.3 Write integration test for cascading deletion
     - Test deleting habit also deletes all associated records
     - Verify referential integrity is maintained
     - _Requirements: 7.2, 13.4_
 
-- [ ] 15. Checkpoint - Ensure all backend tests pass
+- [x] 15. Checkpoint - Ensure all backend tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 16. Frontend - Project Setup and Authentication
