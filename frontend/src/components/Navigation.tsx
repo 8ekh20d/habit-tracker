@@ -48,27 +48,12 @@ const Navigation: React.FC<NavigationProps> = ({ userEmail, onLogout }) => {
                 borderRadius: theme.borderRadius.md,
                 fontWeight: '600',
                 fontSize: '14px',
-                color: isActive('/habits') ? theme.colors.primary : theme.colors.gray[600],
-                backgroundColor: isActive('/habits') ? theme.colors.gray[100] : 'transparent',
+                color: theme.colors.primary,
+                backgroundColor: theme.colors.gray[100],
                 transition: `all ${theme.transitions.fast}`,
               }}
             >
               Habits
-            </Link>
-            <Link 
-              to="/stats" 
-              style={{ 
-                textDecoration: 'none',
-                padding: `${theme.spacing.sm} ${theme.spacing.md}`,
-                borderRadius: theme.borderRadius.md,
-                fontWeight: '600',
-                fontSize: '14px',
-                color: isActive('/stats') ? theme.colors.primary : theme.colors.gray[600],
-                backgroundColor: isActive('/stats') ? theme.colors.gray[100] : 'transparent',
-                transition: `all ${theme.transitions.fast}`,
-              }}
-            >
-              Statistics
             </Link>
           </div>
         </div>

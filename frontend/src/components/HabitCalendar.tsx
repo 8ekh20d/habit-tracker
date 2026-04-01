@@ -27,30 +27,40 @@ const HabitCalendar: React.FC<HabitCalendarProps> = ({ habitRecords, habitId }) 
     );
   };
 
-  const getDayName = (dateStr: string) => {
+  const getDateNumber = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { weekday: 'short' })[0];
+    return date.getDate();
+  };
+
+  const isSunday = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.getDay() === 0;
   };
 
   return (
     <div style={{ marginTop: theme.spacing.md }}>
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(32px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(36px, 1fr))',
         gap: theme.spacing.xs,
         maxWidth: '100%'
       }}>
         {last30Days.map((date) => {
           const completed = isCompleted(date);
           const isToday = date === new Date().toISOString().split('T')[0];
+          const sunday = isSunday(date);
           
           return (
             <div
               key={date}
-              title={date}
+              title={new Date(date).toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric' 
+              })}
               style={{
-                width: '32px',
-                height: '32px',
+                width: '36px',
+                height: '36px',
                 borderRadius: theme.borderRadius.sm,
                 backgroundColor: completed 
                   ? theme.colors.success 
@@ -58,15 +68,19 @@ const HabitCalendar: React.FC<HabitCalendarProps> = ({ habitRecords, habitId }) 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '10px',
-                fontWeight: isToday ? 'bold' : 'normal',
-                color: completed ? theme.colors.white : theme.colors.gray[500],
+                fontSize: '12px',
+                fontWeight: isToday ? 'bold' : '500',
+                color: completed 
+                  ? theme.colors.white 
+                  : sunday 
+                    ? '#ef4444' 
+                    : theme.colors.gray[600],
                 border: isToday ? `2px solid ${theme.colors.primary}` : 'none',
                 transition: `all ${theme.transitions.fast}`,
                 cursor: 'pointer',
               }}
             >
-              {getDayName(date)}
+              {getDateNumber(date)}
             </div>
           );
         })}

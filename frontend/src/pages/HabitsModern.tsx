@@ -72,6 +72,39 @@ const HabitsModern: React.FC = () => {
     return new Date().toISOString().split('T')[0];
   };
 
+  const calculateStreak = (habitId: number): number => {
+    const records = habitRecords
+      .filter(r => r.habitId === habitId)
+      .map(r => r.date)
+      .sort((a, b) => b.localeCompare(a)); // Sort descending (newest first)
+
+    if (records.length === 0) return 0;
+
+    let streak = 0;
+    const today = new Date();
+    let currentDate = new Date(today);
+
+    // Check if today is completed
+    const todayStr = today.toISOString().split('T')[0];
+    if (!records.includes(todayStr)) {
+      // If today is not completed, start from yesterday
+      currentDate.setDate(currentDate.getDate() - 1);
+    }
+
+    // Count consecutive days backwards
+    while (true) {
+      const dateStr = currentDate.toISOString().split('T')[0];
+      if (records.includes(dateStr)) {
+        streak++;
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+
+    return streak;
+  };
+
   const handleCreateHabit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -314,6 +347,7 @@ const HabitsModern: React.FC = () => {
           <div style={{ display: 'grid', gap: theme.spacing.lg }}>
             {habits.map((habit) => {
               const isCompletedToday = isHabitCompletedForDate(habit.id, today);
+              const currentStreak = calculateStreak(habit.id);
               
               return (
                 <div
@@ -380,7 +414,7 @@ const HabitsModern: React.FC = () => {
                     <>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: theme.spacing.lg }}>
                         <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md, marginBottom: theme.spacing.sm }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md, marginBottom: theme.spacing.sm, flexWrap: 'wrap' }}>
                             <h3 style={{ 
                               fontSize: '20px',
                               fontWeight: '600',
@@ -389,6 +423,21 @@ const HabitsModern: React.FC = () => {
                             }}>
                               {habit.name}
                             </h3>
+                            {currentStreak > 0 && (
+                              <span style={{ 
+                                padding: '4px 12px',
+                                backgroundColor: theme.colors.warningLight,
+                                color: theme.colors.warning,
+                                borderRadius: theme.borderRadius.full,
+                                fontSize: '13px',
+                                fontWeight: '700',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                              }}>
+                                🔥 {currentStreak} day{currentStreak !== 1 ? 's' : ''}
+                              </span>
+                            )}
                             {isCompletedToday && (
                               <span style={{ 
                                 padding: '4px 12px',
