@@ -228,32 +228,32 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 14.5, 21.2_
     - _Commit: feat(habits): implement habit check endpoint_
 
-  - [ ] 8.3 Write property test for one record per habit per day
+  - [x] 8.3 Write property test for one record per habit per day
     - **Property 3: One Record Per Habit Per Day**
     - **Validates: Requirements 8.2, 8.6, 13.2**
     - Test that checking same habit twice on same date updates existing record
     - Test that only one record exists per (habitId, date) combination
     - Test that database constraint prevents duplicates
 
-  - [ ] 8.4 Write property test for LocalDate timezone safety
+  - [x] 8.4 Write property test for LocalDate timezone safety
     - **Property 7: LocalDate Timezone Safety**
     - **Validates: Requirements 8.7, 9.5, 19.1, 19.2, 19.3**
     - Test that date calculations work correctly across month boundaries
     - Test that date.minusDays(n).plusDays(n) == date
     - Test that LocalDate operations are timezone-independent
 
-  - [ ] 8.5 Write unit tests for daily tracking
+  - [x] 8.5 Write unit tests for daily tracking
     - Test check habit creates new record
     - Test check habit updates existing record (upsert)
     - Test check habit for non-owned habit returns 404
     - Test check habit without authentication returns 401
     - Test invalid date format returns 400
 
-- [ ] 9. Checkpoint - Ensure habit tracking works correctly
+- [x] 9. Checkpoint - Ensure habit tracking works correctly
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 10. Streak Calculation Algorithm
-  - [ ] 10.1 Implement streak calculation service
+  - [x] 10.1 Implement streak calculation service
     - Create `StatsService` class
     - Implement `calculateStreak(habitId: Long): Int` method
     - Fetch habit records sorted by date descending
@@ -266,7 +266,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 19.3, 19.4_
     - _Commit: feat(stats): implement streak calculation algorithm_
 
-  - [ ] 10.2 Write property test for streak calculation correctness
+  - [x] 10.2 Write property test for streak calculation correctness
     - **Property 5: Streak Calculation Correctness**
     - **Validates: Requirements 9.1, 9.2, 9.3, 9.6, 9.7**
     - Test that streak is always non-negative
@@ -274,7 +274,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - Test that streak represents consecutive days from today or yesterday
     - Test that gaps in dates break the streak
 
-  - [ ] 10.3 Write unit tests for streak calculation
+  - [x] 10.3 Write unit tests for streak calculation
     - Test streak with consecutive days from today
     - Test streak with consecutive days from yesterday (today not done)
     - Test streak stops at gap
@@ -282,7 +282,7 @@ This implementation plan breaks down the Habit Tracker Phase 1 MVP into discrete
     - Test streak handles month/year boundaries correctly
 
 - [ ] 11. Statistics and Analytics Endpoint
-  - [ ] 11.1 Implement statistics endpoint with dynamic streak calculation
+  - [x] 11.1 Implement statistics endpoint with dynamic streak calculation
     - Create `HabitStats` DTO with habitId, habitName, currentStreak, totalCompletions
     - Create `StatsResponse` DTO with list of HabitStats
     - Implement `calculateStats(userId: Long): StatsResponse` in StatsService

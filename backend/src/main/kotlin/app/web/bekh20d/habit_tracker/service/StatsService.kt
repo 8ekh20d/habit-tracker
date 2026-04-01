@@ -1,14 +1,49 @@
 package app.web.bekh20d.habit_tracker.service
 
+import app.web.bekh20d.habit_tracker.dto.HabitStats
+import app.web.bekh20d.habit_tracker.dto.StatsResponse
 import app.web.bekh20d.habit_tracker.model.RecordStatus
 import app.web.bekh20d.habit_tracker.repository.HabitRecordRepository
+import app.web.bekh20d.habit_tracker.repository.HabitRepository
 import org.springframework.stereotype.Service
 import java.time.LocalDate
 
 @Service
 class StatsService(
-    private val habitRecordRepository: HabitRecordRepository
+    private val habitRecordRepository: HabitRecordRepository,
+    private val habitRepository: HabitRepository
 ) {
+    
+    /**
+     * Calculate statistics for all habits belonging to a user.
+     * 
+     * For each habit, dynamically calculates the current streak and counts total completions.
+     * 
+     * @param userId The ID of the user to calculate statistics for
+     * @return StatsResponse containing statistics for all user habits
+     */
+    fun calculateStats(userId: Long): StatsResponse {
+        // Fetch all habits for the user
+        val habits = habitRepository.findByUserId(userId)
+        
+        // Calculate stats for each habit
+        val habitStatsList = habits.map { habit ->
+            // Calculate streak dynamically
+            val currentStreak = calculateStreak(habit.id)
+            
+            // Count total completions
+            val totalCompletions = habitRecordRepository.findByHabitIdOrderByDateDesc(habit.id).size
+            
+            HabitStats(
+                habitId = habit.id,
+                habitName = habit.name,
+                currentStreak = currentStreak,
+                totalCompletions = totalCompletions
+            )
+        }
+        
+        return StatsResponse(habits = habitStatsList)
+    }
     
     /**
      * Calculate the current streak for a habit.

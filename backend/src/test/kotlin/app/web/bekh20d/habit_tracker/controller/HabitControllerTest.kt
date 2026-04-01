@@ -514,4 +514,28 @@ class HabitControllerTest {
         )
             .andExpect(status().isUnauthorized)
     }
+
+    @Test
+    fun `checkHabit with invalid date format should return 400 Bad Request`() {
+        // Create a habit first
+        val createRequest = CreateHabitRequest(name = "Morning Exercise")
+        val createResult = mockMvc.perform(
+            post("/habits")
+                .header("Authorization", "Bearer $authToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createRequest))
+        ).andReturn()
+
+        val habitId = objectMapper.readTree(createResult.response.contentAsString).get("id").asLong()
+
+        // Try to check habit with invalid date format (malformed JSON)
+        val invalidDateJson = """{"date": "invalid-date-format"}"""
+        mockMvc.perform(
+            post("/habits/{id}/check", habitId)
+                .header("Authorization", "Bearer $authToken")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidDateJson)
+        )
+            .andExpect(status().isBadRequest)
+    }
 }

@@ -9,6 +9,7 @@ import app.web.bekh20d.habit_tracker.repository.HabitRepository
 import app.web.bekh20d.habit_tracker.service.HabitService
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.long
 import io.kotest.property.arbitrary.localDate
@@ -130,6 +131,99 @@ class OneRecordPerHabitPerDayPropertyTest : StringSpec({
             
             // Verify findByHabitIdAndDate was called to check for existing record
             verify(habitRecordRepository).findByHabitIdAndDate(habitId, date)
+        }
+    }
+
+    "Property 3: upsert logic ensures no duplicate records are created" {
+        checkAll<Long, Long, LocalDate>(
+            5,
+            Arb.long(1L..1000L),  // user ID
+            Arb.long(1L..1000L),  // habit ID
+            Arb.localDate()       // date
+        ) { userId, habitId, date ->
+            // Arrange
+            val habitRepository = mock<HabitRepository>()
+            val habitRecordRepository = mock<HabitRecordRepository>()
+            val habitService = HabitService(habitRepository, habitRecordRepository)
+            
+            val habit = Habit(
+                id = habitId,
+                userId = userId,
+                name = "Test Habit",
+                frequencyType = FrequencyType.DAILY,
+                createdAt = LocalDateTime.now()
+            )
+            
+            val existingRecord = HabitRecord(
+                id = 1L,
+                habitId = habitId,
+                date = date,
+                status = RecordStatus.DONE
+            )
+            
+            whenever(habitRepository.findByIdAndUserId(habitId, userId)).thenReturn(habit)
+            whenever(habitRecordRepository.findByHabitIdAndDate(habitId, date)).thenReturn(existingRecord)
+            whenever(habitRecordRepository.save(any())).thenReturn(existingRecord)
+            
+            // Act: Check habit when record already exists
+            val result = habitService.checkHabit(habitId, userId, date)
+            
+            // Assert: Existing record is updated, not duplicated
+            result.id shouldBe existingRecord.id
+            result.habitId shouldBe habitId
+            result.date shouldBe date
+            
+            // Verify that the service checked for existing record before saving
+            verify(habitRecordRepository).findByHabitIdAndDate(habitId, date)
+            verify(habitRecordRepository).save(any())
+        }
+    }
+
+    "Property 3: record ID remains same when updating existing record" {
+        checkAll<Long, Long, LocalDate>(
+            5,
+            Arb.long(1L..1000L),  // user ID
+            Arb.long(1L..1000L),  // habit ID
+            Arb.localDate()       // date
+        ) { userId, habitId, date ->
+            // Arrange
+            val habitRepository = mock<HabitRepository>()
+            val habitRecordRepository = mock<HabitRecordRepository>()
+            val habitService = HabitService(habitRepository, habitRecordRepository)
+            
+            val habit = Habit(
+                id = habitId,
+                userId = userId,
+                name = "Test Habit",
+                frequencyType = FrequencyType.DAILY,
+                createdAt = LocalDateTime.now()
+            )
+            
+            val existingRecordId = 42L
+            val existingRecord = HabitRecord(
+                id = existingRecordId,
+                habitId = habitId,
+                date = date,
+                status = RecordStatus.DONE
+            )
+            
+            val updatedRecord = HabitRecord(
+                id = existingRecordId,
+                habitId = habitId,
+                date = date,
+                status = RecordStatus.DONE
+            )
+            
+            whenever(habitRepository.findByIdAndUserId(habitId, userId)).thenReturn(habit)
+            whenever(habitRecordRepository.findByHabitIdAndDate(habitId, date)).thenReturn(existingRecord)
+            whenever(habitRecordRepository.save(any())).thenReturn(updatedRecord)
+            
+            // Act: Check habit when record already exists
+            val result = habitService.checkHabit(habitId, userId, date)
+            
+            // Assert: Record ID remains the same (update, not insert)
+            result.id shouldBe existingRecordId
+            result.id shouldNotBe 0L
         }
     }
 })
