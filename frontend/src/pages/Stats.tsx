@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getStats, HabitStats } from '../api/stats';
+import Navigation from '../components/Navigation';
+import { getEmailFromToken } from '../utils/jwt';
 
 const Stats: React.FC = () => {
   const [stats, setStats] = useState<HabitStats[]>([]);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, token } = useAuth();
+  const userEmail = getEmailFromToken(token);
 
   useEffect(() => {
     loadStats();
@@ -29,15 +32,9 @@ const Stats: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '800px', margin: '50px auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Habit Statistics</h2>
-        <div>
-          <Link to="/habits" style={{ marginRight: '15px' }}>Back to Habits</Link>
-          <button onClick={handleLogout} style={{ padding: '8px 16px', cursor: 'pointer' }}>
-            Logout
-          </button>
-        </div>
-      </div>
+      <Navigation userEmail={userEmail} onLogout={handleLogout} />
+      
+      <h2 style={{ marginBottom: '20px' }}>Habit Statistics</h2>
 
       {error && <p style={{ color: 'red', marginBottom: '15px' }}>{error}</p>}
 
@@ -61,6 +58,7 @@ const Stats: React.FC = () => {
                   <div>
                     <p style={{ margin: '0', fontSize: '14px', color: '#666' }}>Current Streak</p>
                     <p style={{ margin: '5px 0 0 0', fontSize: '32px', fontWeight: 'bold', color: '#4CAF50' }}>
+                      {stat.currentStreak > 0 && '🔥 '}
                       {stat.currentStreak} days
                     </p>
                   </div>

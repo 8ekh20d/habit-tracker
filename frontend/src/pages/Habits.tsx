@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getHabits, createHabit, updateHabit, deleteHabit, checkHabit, getHabitRecords, Habit, HabitRecord } from '../api/habits';
+import Navigation from '../components/Navigation';
+import { getEmailFromToken } from '../utils/jwt';
 
 const Habits: React.FC = () => {
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -9,12 +11,11 @@ const Habits: React.FC = () => {
   const [newHabitName, setNewHabitName] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingName, setEditingName] = useState('');
-  const [selectedDate, setSelectedDate] = useState<{ [key: number]: string }>({});
-  const [showDatePicker, setShowDatePicker] = useState<{ [key: number]: boolean }>({});
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, token } = useAuth();
+  const userEmail = getEmailFromToken(token);
 
   useEffect(() => {
     loadHabits();
@@ -142,21 +143,16 @@ const Habits: React.FC = () => {
     }
   };
 
-  const handleCheckHabit = async (id: number, date?: string) => {
+  const handleCheckHabit = async (id: number) => {
     setError('');
     setMessage('');
 
-    const targetDate = date || getTodayString();
+    const targetDate = getTodayString();
 
     try {
       await checkHabit(id, targetDate);
-      const dateLabel = date ? `for ${targetDate}` : 'for today';
-      setMessage(`Habit marked as done ${dateLabel}`);
+      setMessage('Habit marked as done for today');
       loadHabitRecords();
-      
-      // Close date picker if open
-      setShowDatePicker((prev) => ({ ...prev, [id]: false }));
-      setSelectedDate((prev) => ({ ...prev, [id]: '' }));
     } catch (err: any) {
       if (err.response?.status === 401) {
         logout();
@@ -165,13 +161,6 @@ const Habits: React.FC = () => {
         setError(err.response?.data?.message || 'Failed to check habit');
       }
     }
-  };
-
-  const toggleDatePicker = (habitId: number) => {
-    setShowDatePicker((prev) => ({
-      ...prev,
-      [habitId]: !prev[habitId],
-    }));
   };
 
   const handleLogout = () => {
@@ -183,15 +172,9 @@ const Habits: React.FC = () => {
 
   return (
     <div style={{ maxWidth: '800px', margin: '50px auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>My Habits</h2>
-        <div>
-          <Link to="/stats" style={{ marginRight: '15px' }}>View Stats</Link>
-          <button onClick={handleLogout} style={{ padding: '8px 16px', cursor: 'pointer' }}>
-            Logout
-          </button>
-        </div>
-      </div>
+      <Navigation userEmail={userEmail} onLogout={handleLogout} />
+      
+      <h2 style={{ marginBottom: '20px' }}>My Habits</h2>
 
       {message && <p style={{ color: 'green', marginBottom: '15px' }}>{message}</p>}
       {error && <p style={{ color: 'red', marginBottom: '15px' }}>{error}</p>}
@@ -288,19 +271,6 @@ const Habits: React.FC = () => {
                             {isCompletedToday ? '✓ Done Today' : 'Mark Done Today'}
                           </button>
                           <button
-                            onClick={() => toggleDatePicker(habit.id)}
-                            style={{
-                              padding: '8px 16px',
-                              cursor: 'pointer',
-                              backgroundColor: '#2196F3',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '3px',
-                            }}
-                          >
-                            📅 Past Date
-                          </button>
-                          <button
                             onClick={() => {
                               setEditingId(habit.id);
                               setEditingName(habit.name);
@@ -324,53 +294,6 @@ const Habits: React.FC = () => {
                           </button>
                         </div>
                       </div>
-                      
-                      {showDatePicker[habit.id] && (
-                        <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '3px' }}>
-                          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                            Select a past date:
-                          </label>
-                          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                            <input
-                              type="date"
-                              value={selectedDate[habit.id] || ''}
-                              onChange={(e) =>
-                                setSelectedDate((prev) => ({
-                                  ...prev,
-                                  [habit.id]: e.target.value,
-                                }))
-                              }
-                              max={today}
-                              style={{ padding: '8px', flex: 1 }}
-                            />
-                            <button
-                              onClick={() => {
-                                if (selectedDate[habit.id]) {
-                                  handleCheckHabit(habit.id, selectedDate[habit.id]);
-                                } else {
-                                  setError('Please select a date');
-                                }
-                              }}
-                              style={{
-                                padding: '8px 16px',
-                                cursor: 'pointer',
-                                backgroundColor: '#4CAF50',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '3px',
-                              }}
-                            >
-                              Mark Done
-                            </button>
-                            <button
-                              onClick={() => toggleDatePicker(habit.id)}
-                              style={{ padding: '8px 16px', cursor: 'pointer' }}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   )}
                 </li>
